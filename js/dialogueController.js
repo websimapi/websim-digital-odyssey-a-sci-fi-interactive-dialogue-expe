@@ -1,6 +1,5 @@
 import { dialogue } from './dialogueData.js';
 import { speakText } from './speechController.js';
-import { transitionToFullScene } from './spaceScene.js';
 
 let currentDialogueIndex = 0;
 let isPaused = false;
@@ -30,7 +29,9 @@ export async function startScene() {
       } else {
         audioPlayer.pause();
         clearInterval(fadeOut);
-        transitionToFullScene();
+        import('./spaceScene.js').then(module => {
+          module.zoomOutFromWindow();
+        });
       }
     }, 100);
   }
