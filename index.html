@@ -26,6 +26,13 @@ function speakText(text, voiceType, pitch, rate) {
       resolve();
       return;
     }
+    
+    const words = text.split(' ');
+    const dialogueElement = document.getElementById('dialogueText');
+    dialogueElement.innerHTML = words.map(word => 
+      `<span class="dialogue-word">${word}</span>`
+    ).join(' ');
+    
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.pitch = pitch;
     utterance.rate = rate;
@@ -35,8 +42,32 @@ function speakText(text, voiceType, pitch, rate) {
       voiceType === 'female' ? v.name.includes('Female') : v.name.includes('Male')
     ) || voices[0];
     utterance.voice = voice;
+
+    let wordIndex = 0;
+    const wordElements = dialogueElement.getElementsByClassName('dialogue-word');
     
-    utterance.onend = resolve;
+    utterance.onboundary = (event) => {
+      if (event.name === 'word') {
+        // Remove highlight from previous word
+        if (wordIndex > 0) {
+          wordElements[wordIndex - 1].classList.remove('highlighted-word');
+        }
+        // Add highlight to current word
+        if (wordIndex < wordElements.length) {
+          wordElements[wordIndex].classList.add('highlighted-word');
+          wordIndex++;
+        }
+      }
+    };
+
+    utterance.onend = () => {
+      // Remove highlight from last word
+      if (wordIndex > 0 && wordElements[wordIndex - 1]) {
+        wordElements[wordIndex - 1].classList.remove('highlighted-word');
+      }
+      resolve();
+    };
+    
     synth.speak(utterance);
   });
 }
@@ -132,7 +163,6 @@ async function startScene() {
   
   for (const line of dialogue) {
     if (isPaused) break;
-    updateSceneText(line.text);
     await speakText(line.text, line.voice, line.pitch, line.rate);
     await new Promise(resolve => setTimeout(resolve, 500));
   }
@@ -154,10 +184,12 @@ function pauseScene() {
   synth.cancel();
   audioPlayer.pause();
   startButton.style.display = 'flex';
-}
-
-function updateSceneText(text) {
-  document.getElementById('dialogueText').textContent = text;
+  
+  // Clear all highlighted words
+  const words = document.getElementsByClassName('dialogue-word');
+  Array.from(words).forEach(word => {
+    word.classList.remove('highlighted-word');
+  });
 }
 
 startButton.addEventListener('click', startScene);
@@ -254,6 +286,12 @@ body {
   color: #fff;
   border: 1px solid rgba(100,150,255,0.3);
   margin-top: 20px;
+}
+
+.highlighted-word {
+  color: rgb(100, 150, 255);
+  text-shadow: 0 0 5px rgba(100, 150, 255, 0.5);
+  transition: color 0.3s;
 }
 
 #startButton {
