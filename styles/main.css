@@ -4,10 +4,18 @@ body {
   height: 100vh;
 }
 
-canvas {
+.scene {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#spaceScene {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  display: block;
 }
 
 #startButton {
@@ -20,6 +28,9 @@ canvas {
   background: none;
   border: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
 
@@ -35,13 +46,8 @@ canvas {
   filter: drop-shadow(0 0 15px rgba(100,150,255,0.8));
 }
 
-#dialogueText {
-  position: absolute;
+.canvas {
   width: 100%;
-  text-align: center;
-  color: #fff;
-  font-family: Arial, sans-serif;
-  font-size: 1.2em;
-  bottom: 20px;
-  z-index: 1000;
+  height: 100%;
+  display: block;
 }
