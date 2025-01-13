@@ -151,23 +151,62 @@ document.addEventListener('DOMContentLoaded', createCentauriBelt);
 </script>
 <style>
 body {
-  background: #000;
-  color: #fff;
-  font-family: 'Arial', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
   margin: 0;
   overflow: hidden;
+  height: 100vh;
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      #1a1a1a 0px,
+      #1a1a1a 10px,
+      #202020 10px,
+      #202020 20px
+    );
 }
 
 .scene {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ship-interior {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(90deg, rgba(40,40,40,0.9), rgba(30,30,30,0.9)),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z' fill='%23333333' fill-opacity='0.4'/%3E%3C/g%3E%3C/svg%3E");
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+}
+
+.window-frame {
+  position: relative;
+  width: 80vw;
+  height: 60vh;
+  background: linear-gradient(45deg, #2a2a2a, #333);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 
+    0 0 0 2px #444,
+    0 0 0 4px #222,
+    0 0 20px rgba(0,0,0,0.5);
+}
+
+.window {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 
+    inset 0 0 20px rgba(100,150,255,0.3),
+    0 0 10px rgba(100,150,255,0.2);
 }
 
 .stars {
@@ -183,19 +222,6 @@ body {
   100% { opacity: 0.5; }
 }
 
-.window {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80vw;
-  height: 60vh;
-  border: 4px solid #456;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(100,150,255,0.3);
-  overflow: hidden;
-}
-
 .dialogue-box {
   position: absolute;
   bottom: 10%;
@@ -206,59 +232,92 @@ body {
   border-radius: 10px;
   width: 80%;
   text-align: center;
+  color: #fff;
+  border: 1px solid rgba(100,150,255,0.3);
 }
 
 #startButton {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
   padding: 15px 30px;
   font-size: 1.2em;
-  background: #234;
+  background: linear-gradient(to bottom, #345, #234);
   color: #fff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.3s;
+  box-shadow: 0 0 10px rgba(100,150,255,0.3);
 }
 
 #startButton:hover {
-  background: #345;
-  transform: scale(1.05);
+  background: linear-gradient(to bottom, #456, #345);
+  transform: translateX(-50%) scale(1.05);
 }
 
 #dialogueText {
   font-size: 1.2em;
   line-height: 1.4;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Add metallic rivets to the window frame */
+.window-frame::before,
+.window-frame::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(45deg, #444, #222);
+  border-radius: 50%;
+  border: 2px solid #555;
+}
+
+.window-frame::before {
+  top: 10px;
+  left: 10px;
+}
+
+.window-frame::after {
+  top: 10px;
+  right: 10px;
 }
 </style>
 </head>
 <body>
   <div class="scene">
-    <svg class="stars" viewBox="0 0 1000 1000">
-      <defs>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-          <feMerge>
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
-      </defs>
-      <g id="stars"></g>
-      <g id="centauriBelt"></g>
-      <script>
-        const starsGroup = document.getElementById('stars');
-        for(let i = 0; i < 200; i++) {
-          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-          circle.setAttribute("cx", Math.random() * 1000);
-          circle.setAttribute("cy", Math.random() * 1000);
-          circle.setAttribute("r", Math.random() * 2);
-          circle.setAttribute("fill", "#fff");
-          starsGroup.appendChild(circle);
-        }
-      </script>
-    </svg>
-    <div class="window">
-      <div class="dialogue-box">
-        <p id="dialogueText"></p>
+    <div class="ship-interior"></div>
+    <div class="window-frame">
+      <div class="window">
+        <svg class="stars" viewBox="0 0 1000 1000">
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          <g id="stars"></g>
+          <g id="centauriBelt"></g>
+          <script>
+            const starsGroup = document.getElementById('stars');
+            for(let i = 0; i < 200; i++) {
+              const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+              circle.setAttribute("cx", Math.random() * 1000);
+              circle.setAttribute("cy", Math.random() * 1000);
+              circle.setAttribute("r", Math.random() * 2);
+              circle.setAttribute("fill", "#fff");
+              starsGroup.appendChild(circle);
+            }
+          </script>
+        </svg>
+        <div class="dialogue-box">
+          <p id="dialogueText"></p>
+        </div>
       </div>
     </div>
   </div>
