@@ -5,6 +5,7 @@ const startButton = document.getElementById('startButton');
 const audioPlayer = document.getElementById('backgroundMusic');
 let currentDialogueIndex = 0;
 const synth = window.speechSynthesis;
+let isPaused = false;
 
 const dialogue = [
   { text: "Father, why do the stars look different today? They seem... closer somehow.", voice: "female", pitch: 1.2, rate: 0.9 },
@@ -21,6 +22,10 @@ const dialogue = [
 
 function speakText(text, voiceType, pitch, rate) {
   return new Promise(resolve => {
+    if (isPaused) {
+      resolve();
+      return;
+    }
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.pitch = pitch;
     utterance.rate = rate;
@@ -118,6 +123,7 @@ function createCentauriBelt() {
 }
 
 async function startScene() {
+  isPaused = false;
   startButton.style.display = 'none';
   audioPlayer.play();
   audioPlayer.volume = 0.3;
@@ -125,19 +131,29 @@ async function startScene() {
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   for (const line of dialogue) {
+    if (isPaused) break;
     updateSceneText(line.text);
     await speakText(line.text, line.voice, line.pitch, line.rate);
     await new Promise(resolve => setTimeout(resolve, 500));
   }
   
-  const fadeOut = setInterval(() => {
-    if (audioPlayer.volume > 0.02) {
-      audioPlayer.volume -= 0.02;
-    } else {
-      audioPlayer.pause();
-      clearInterval(fadeOut);
-    }
-  }, 100);
+  if (!isPaused) {
+    const fadeOut = setInterval(() => {
+      if (audioPlayer.volume > 0.02) {
+        audioPlayer.volume -= 0.02;
+      } else {
+        audioPlayer.pause();
+        clearInterval(fadeOut);
+      }
+    }, 100);
+  }
+}
+
+function pauseScene() {
+  isPaused = true;
+  synth.cancel();
+  audioPlayer.pause();
+  startButton.style.display = 'flex';
 }
 
 function updateSceneText(text) {
@@ -145,6 +161,11 @@ function updateSceneText(text) {
 }
 
 startButton.addEventListener('click', startScene);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    pauseScene();
+  }
+});
 
 // Initialize Centauri Belt when document loads
 document.addEventListener('DOMContentLoaded', createCentauriBelt);
@@ -169,8 +190,10 @@ body {
   width: 100vw;
   height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 20px;
 }
 
 .ship-interior {
@@ -223,38 +246,42 @@ body {
 }
 
 .dialogue-box {
-  position: absolute;
-  bottom: 10%;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 80%;
   background: rgba(0,0,0,0.8);
   padding: 20px;
   border-radius: 10px;
-  width: 80%;
   text-align: center;
   color: #fff;
   border: 1px solid rgba(100,150,255,0.3);
+  margin-top: 20px;
 }
 
 #startButton {
   position: absolute;
-  bottom: 5%;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  padding: 15px 30px;
-  font-size: 1.2em;
-  background: linear-gradient(to bottom, #345, #234);
-  color: #fff;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  background: none;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 0 10px rgba(100,150,255,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
-#startButton:hover {
-  background: linear-gradient(to bottom, #456, #345);
-  transform: translateX(-50%) scale(1.05);
+#startButton svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 10px rgba(100,150,255,0.5));
+  transition: transform 0.3s, filter 0.3s;
+}
+
+#startButton:hover svg {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 15px rgba(100,150,255,0.8));
 }
 
 #dialogueText {
@@ -263,7 +290,6 @@ body {
   font-family: 'Arial', sans-serif;
 }
 
-/* Add metallic rivets to the window frame */
 .window-frame::before,
 .window-frame::after {
   content: '';
@@ -315,14 +341,19 @@ body {
             }
           </script>
         </svg>
-        <div class="dialogue-box">
-          <p id="dialogueText"></p>
-        </div>
       </div>
+    </div>
+    <div class="dialogue-box">
+      <p id="dialogueText"></p>
     </div>
   </div>
   
-  <button id="startButton">Begin Scene</button>
+  <button id="startButton">
+    <svg viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="45" fill="rgba(100,150,255,0.2)" stroke="rgba(100,150,255,0.5)" stroke-width="2"/>
+      <path d="M35,25 L75,50 L35,75 Z" fill="rgba(100,150,255,0.9)"/>
+    </svg>
+  </button>
   <audio id="backgroundMusic" src="/Digital Odyssey - Track 2 - Sonauto (1).wav"></audio>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
