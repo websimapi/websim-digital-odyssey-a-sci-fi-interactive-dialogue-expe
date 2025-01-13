@@ -1,125 +1,46 @@
 import * as THREE from 'three';
 
-let spaceScene, spaceCamera, shipScene, shipCamera, renderer;
-let stars = [];
-let beltParticles = [];
-let shipRoom, windowMesh;
+let spaceGroup, camera, stars = [], beltParticles = [];
 
-export function initThreeJS() {
-  // Initialize renderer
-  const canvas = document.getElementById('spaceScene');
-  renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: true,
-    alpha: true
-  });
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.autoClear = false;
+export function initSpaceWindow() {
+  spaceGroup = new THREE.Group();
+  camera = new THREE.PerspectiveCamera(75, 16/9, 0.1, 2000);
+  camera.position.z = 8;
+  camera.position.y = 2;
+  camera.lookAt(0, 0, 0);
 
-  // Initialize space scene (the view through the window)
-  spaceScene = new THREE.Scene();
-  spaceScene.background = new THREE.Color(0x000000);
-  
-  spaceCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-  spaceCamera.position.z = 8;
-  spaceCamera.position.y = 2;
-  spaceCamera.lookAt(0, 0, 0);
+  // Create window frame geometry
+  const windowFrame = createWindowFrame();
+  spaceGroup.add(windowFrame);
 
-  // Initialize ship interior scene
-  shipScene = new THREE.Scene();
-  shipCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-  shipCamera.position.z = 10;
-  shipCamera.position.y = 2;
-
-  // Create ship interior
-  createShipInterior();
-  
-  // Add lights to space scene
   const ambientLight = new THREE.AmbientLight(0x101010);
-  spaceScene.add(ambientLight);
+  spaceGroup.add(ambientLight);
 
   const pointLight1 = new THREE.PointLight(0x8888ff, 1, 100);
   pointLight1.position.set(5, 5, 5);
-  spaceScene.add(pointLight1);
+  spaceGroup.add(pointLight1);
 
   const pointLight2 = new THREE.PointLight(0x4444ff, 0.8, 100);
   pointLight2.position.set(-5, -5, -5);
-  spaceScene.add(pointLight2);
-
-  // Add lights to ship scene
-  const shipAmbient = new THREE.AmbientLight(0x333333);
-  shipScene.add(shipAmbient);
-
-  const shipLight = new THREE.PointLight(0x6666ff, 0.8, 20);
-  shipLight.position.set(0, 5, 5);
-  shipScene.add(shipLight);
+  spaceGroup.add(pointLight2);
 
   createStarfield();
   createDistantStars();
   createCentauriBelt3D();
-  
-  animate();
+
+  spaceGroup.position.z = -5;
+  return spaceGroup;
 }
 
-function createShipInterior() {
-  // Create room geometry
-  const roomGeometry = new THREE.BoxGeometry(20, 15, 20);
-  const roomMaterial = new THREE.MeshStandardMaterial({
+function createWindowFrame() {
+  const frameGeometry = new THREE.BoxGeometry(8, 4.5, 0.5);
+  const frameMaterial = new THREE.MeshStandardMaterial({
     color: 0x333333,
     metalness: 0.8,
-    roughness: 0.2,
-    side: THREE.BackSide
+    roughness: 0.2
   });
-  shipRoom = new THREE.Mesh(roomGeometry, roomMaterial);
-  shipScene.add(shipRoom);
-
-  // Add window frame
-  const frameGeometry = new THREE.BoxGeometry(12, 8, 0.5);
-  const frameMaterial = new THREE.MeshStandardMaterial({
-    color: 0x444444,
-    metalness: 0.9,
-    roughness: 0.1
-  });
-  const windowFrame = new THREE.Mesh(frameGeometry, frameMaterial);
-  windowFrame.position.z = -9.7;
-  shipScene.add(windowFrame);
-
-  // Add panels and details to the room
-  addRoomDetails();
-}
-
-function addRoomDetails() {
-  // Add wall panels
-  const panelGeometry = new THREE.PlaneGeometry(2, 2);
-  const panelMaterial = new THREE.MeshStandardMaterial({
-    color: 0x444444,
-    metalness: 0.7,
-    roughness: 0.3
-  });
-
-  for (let i = 0; i < 8; i++) {
-    for (let j = 0; j < 4; j++) {
-      const panel = new THREE.Mesh(panelGeometry, panelMaterial);
-      panel.position.set(-8 + i * 2.5, -4 + j * 2.5, -9.5);
-      shipScene.add(panel);
-    }
-  }
-
-  // Add ceiling lights
-  const lightGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.1, 16);
-  const lightMaterial = new THREE.MeshStandardMaterial({
-    color: 0x88aaff,
-    emissive: 0x4477ff,
-    emissiveIntensity: 0.5
-  });
-
-  for (let i = 0; i < 3; i++) {
-    const light = new THREE.Mesh(lightGeometry, lightMaterial);
-    light.rotation.x = Math.PI / 2;
-    light.position.set(-4 + i * 4, 6, -8);
-    shipScene.add(light);
-  }
+  const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+  return frame;
 }
 
 function createDistantStars() {
@@ -143,7 +64,7 @@ function createDistantStars() {
 
   distantStarGeometry.setAttribute('position', new THREE.Float32BufferAttribute(distantStarVertices, 3));
   const distantStarField = new THREE.Points(distantStarGeometry, distantStarMaterial);
-  spaceScene.add(distantStarField);
+  spaceGroup.add(distantStarField);
 }
 
 function createStarfield() {
@@ -166,7 +87,7 @@ function createStarfield() {
 
   starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
   const starField = new THREE.Points(starGeometry, starMaterial);
-  spaceScene.add(starField);
+  spaceGroup.add(starField);
   stars.push(starField);
 }
 
@@ -198,7 +119,7 @@ function createCentauriBelt3D() {
 
     particles.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
     const particleSystem = new THREE.Points(particles, particleMaterial);
-    spaceScene.add(particleSystem);
+    spaceGroup.add(particleSystem);
     beltParticles.push(particleSystem);
   }
 
@@ -226,14 +147,12 @@ function createCentauriBelt3D() {
 
   dustGeometry.setAttribute('position', new THREE.Float32BufferAttribute(dustPositions, 3));
   const dustSystem = new THREE.Points(dustGeometry, dustMaterial);
-  spaceScene.add(dustSystem);
+  spaceGroup.add(dustSystem);
   beltParticles.push(dustSystem);
 }
 
-function animate() {
-  requestAnimationFrame(animate);
-
-  // Rotate stars slightly for subtle movement
+export function updateSpaceWindow() {
+  // Update animations
   stars.forEach(starField => {
     starField.rotation.y += 0.0001;
   });
@@ -241,46 +160,4 @@ function animate() {
   beltParticles.forEach((particles, index) => {
     particles.rotation.y += 0.0005 + (index * 0.0001);
   });
-
-  // Render both scenes
-  renderer.clear();
-  renderer.render(shipScene, shipCamera);
-  renderer.clearDepth();
-  renderer.render(spaceScene, spaceCamera);
-}
-
-export function onWindowResize() {
-  const canvas = renderer.domElement;
-  const aspect = canvas.clientWidth / canvas.clientHeight;
-  
-  spaceCamera.aspect = aspect;
-  spaceCamera.updateProjectionMatrix();
-  
-  shipCamera.aspect = aspect;
-  shipCamera.updateProjectionMatrix();
-  
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
-}
-
-export function zoomOutFromWindow() {
-  const startZ = shipCamera.position.z;
-  const targetZ = 15;
-  const duration = 2000; // 2 seconds
-  const startTime = Date.now();
-
-  function animate() {
-    const elapsed = Date.now() - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    
-    // Use easing function for smooth animation
-    const eased = 1 - Math.pow(1 - progress, 3);
-    
-    shipCamera.position.z = startZ + (targetZ - startZ) * eased;
-    
-    if (progress < 1) {
-      requestAnimationFrame(animate);
-    }
-  }
-  
-  animate();
 }

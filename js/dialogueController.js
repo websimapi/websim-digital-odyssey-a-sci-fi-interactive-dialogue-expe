@@ -29,9 +29,6 @@ export async function startScene() {
       } else {
         audioPlayer.pause();
         clearInterval(fadeOut);
-        import('./spaceScene.js').then(module => {
-          module.zoomOutFromWindow();
-        });
       }
     }, 100);
   }

@@ -1,4 +1,4 @@
-import { initThreeJS, onWindowResize } from './spaceScene.js';
+import { initMainScene, onWindowResize } from './mainScene.js';
 import { startScene, pauseScene } from './dialogueController.js';
 
 const startButton = document.getElementById('startButton');
@@ -10,5 +10,5 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-document.addEventListener('DOMContentLoaded', initThreeJS);
+document.addEventListener('DOMContentLoaded', initMainScene);
 window.addEventListener('resize', onWindowResize);
