@@ -1,5 +1,5 @@
-import { initThreeJS, onWindowResize } from './scene.js';
-import { startScene, pauseScene } from './dialogue.js';
+import { initThreeJS, onWindowResize } from './spaceScene.js';
+import { startScene, pauseScene } from './dialogueController.js';
 
 const startButton = document.getElementById('startButton');
 
