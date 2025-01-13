@@ -158,20 +158,24 @@ function pauseScene() {
   audioPlayer.pause();
   startButton.style.display = 'flex';
   document.querySelector('.character-portrait').style.opacity = '0';
+  document.querySelector('.father-portrait').style.opacity = '0';
 }
 
 function updateSceneText(text) {
   document.getElementById('dialogueText').textContent = text;
   
-  // Get portrait element
-  const portrait = document.querySelector('.character-portrait');
+  // Get portrait elements
+  const novaPortrait = document.querySelector('.character-portrait');
+  const fatherPortrait = document.querySelector('.father-portrait');
   
-  // Show/hide portrait based on speaker
+  // Show/hide portraits based on speaker
   const currentLine = dialogue[currentDialogueIndex];
   if (currentLine.voice === 'female') {
-    portrait.style.opacity = '1';
+    novaPortrait.style.opacity = '1';
+    fatherPortrait.style.opacity = '0';
   } else {
-    portrait.style.opacity = '0';
+    novaPortrait.style.opacity = '0'; 
+    fatherPortrait.style.opacity = '1';
   }
   
   currentDialogueIndex++;
@@ -271,6 +275,7 @@ body {
   color: #fff;
   border: 1px solid rgba(100,150,255,0.3);
   margin-top: 20px;
+  z-index: 1000;
 }
 
 #startButton {
@@ -331,7 +336,7 @@ body {
 .character-portrait {
   position: absolute;
   left: 20px;
-  bottom: 90px; /* Position above dialogue box */
+  bottom: 90px;
   width: 150px;
   height: 150px;
   border: 3px solid rgba(100,150,255,0.5);
@@ -339,6 +344,12 @@ body {
   overflow: hidden;
   opacity: 0;
   transition: opacity 0.3s;
+  z-index: 999;
+}
+
+.father-portrait {
+  right: 20px;
+  left: auto;
 }
 
 .character-portrait img {
@@ -353,6 +364,9 @@ body {
     <div class="ship-interior"></div>
     <div class="character-portrait">
       <img src="/nova.png" alt="Nova portrait">
+    </div>
+    <div class="character-portrait father-portrait">
+      <img src="/father.png" alt="Father portrait">
     </div>
     <div class="window-frame">
       <div class="window">
