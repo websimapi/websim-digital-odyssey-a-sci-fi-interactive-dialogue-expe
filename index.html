@@ -1,5 +1,6 @@
 <html><head><base href="." />
 <script type="module">
+// Import Web Speech API
 const startButton = document.getElementById('startButton');
 const audioPlayer = document.getElementById('backgroundMusic');
 let currentDialogueIndex = 0;
@@ -35,6 +36,87 @@ function speakText(text, voiceType, pitch, rate) {
   });
 }
 
+// Create animated particle system for the Centauri Belt
+function createCentauriBelt() {
+  const belt = document.getElementById('centauriBelt');
+  const numParticles = 1000;
+  
+  // Create dust and debris particles
+  for(let i = 0; i < numParticles; i++) {
+    const particle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 300 + Math.random() * 100;
+    const x = 500 + Math.cos(angle) * radius;
+    const y = 500 + Math.sin(angle) * radius;
+    
+    particle.setAttribute("cx", x);
+    particle.setAttribute("cy", y);
+    particle.setAttribute("r", Math.random() * 1.5);
+    
+    // Vary colors between blue-white stars and reddish dust
+    const colorType = Math.random();
+    let color;
+    if(colorType < 0.7) {
+      color = `rgb(200,220,255)`;
+    } else {
+      color = `rgb(255,${150 + Math.random() * 50},${150 + Math.random() * 50})`;
+    }
+    
+    particle.setAttribute("fill", color);
+    
+    // Add subtle animation
+    const animateMotion = document.createElementNS("http://www.w3.org/2000/svg", "animateTransform");
+    animateMotion.setAttribute("attributeName", "transform");
+    animateMotion.setAttribute("type", "rotate");
+    animateMotion.setAttribute("from", `0 500 500`);
+    animateMotion.setAttribute("to", `360 500 500`);
+    animateMotion.setAttribute("dur", `${20 + Math.random() * 40}s`);
+    animateMotion.setAttribute("repeatCount", "indefinite");
+    
+    particle.appendChild(animateMotion);
+    belt.appendChild(particle);
+  }
+  
+  // Add some larger stellar bodies
+  for(let i = 0; i < 5; i++) {
+    const star = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const angle = (i / 5) * Math.PI * 2;
+    const radius = 350;
+    const x = 500 + Math.cos(angle) * radius;
+    const y = 500 + Math.sin(angle) * radius;
+    
+    // Create star glow
+    const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    glow.setAttribute("cx", x);
+    glow.setAttribute("cy", y);
+    glow.setAttribute("r", 8);
+    glow.setAttribute("fill", "rgba(100,150,255,0.3)");
+    glow.setAttribute("filter", "url(#glow)");
+    
+    // Create star core
+    const core = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    core.setAttribute("cx", x);
+    core.setAttribute("cy", y);
+    core.setAttribute("r", 3);
+    core.setAttribute("fill", "#fff");
+    
+    star.appendChild(glow);
+    star.appendChild(core);
+    
+    // Rotate around center
+    const animateMotion = document.createElementNS("http://www.w3.org/2000/svg", "animateTransform");
+    animateMotion.setAttribute("attributeName", "transform");
+    animateMotion.setAttribute("type", "rotate");
+    animateMotion.setAttribute("from", `0 500 500`);
+    animateMotion.setAttribute("to", `360 500 500`);
+    animateMotion.setAttribute("dur", "30s");
+    animateMotion.setAttribute("repeatCount", "indefinite");
+    
+    star.appendChild(animateMotion);
+    belt.appendChild(star);
+  }
+}
+
 async function startScene() {
   startButton.style.display = 'none';
   audioPlayer.play();
@@ -63,6 +145,9 @@ function updateSceneText(text) {
 }
 
 startButton.addEventListener('click', startScene);
+
+// Initialize Centauri Belt when document loads
+document.addEventListener('DOMContentLoaded', createCentauriBelt);
 </script>
 <style>
 body {
@@ -82,37 +167,7 @@ body {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(#1a1a2e, #16213e);
-}
-
-.ship-interior {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: 
-    linear-gradient(90deg, 
-      rgba(26, 26, 46, 0.9) 0%,
-      rgba(22, 33, 62, 0.9) 100%
-    );
-}
-
-.wall-panels {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    linear-gradient(0deg, rgba(40, 40, 60, 0.5) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(40, 40, 60, 0.5) 1px, transparent 1px);
-  background-size: 50px 50px;
-}
-
-.characters {
-  position: absolute;
-  bottom: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 300px;
-  height: 400px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
 }
 
 .stars {
@@ -139,7 +194,6 @@ body {
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(100,150,255,0.3);
   overflow: hidden;
-  background: rgba(0,0,0,0.3);
 }
 
 .dialogue-box {
@@ -178,11 +232,18 @@ body {
 </head>
 <body>
   <div class="scene">
-    <div class="ship-interior">
-      <div class="wall-panels"></div>
-    </div>
     <svg class="stars" viewBox="0 0 1000 1000">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
       <g id="stars"></g>
+      <g id="centauriBelt"></g>
       <script>
         const starsGroup = document.getElementById('stars');
         for(let i = 0; i < 200; i++) {
@@ -196,42 +257,9 @@ body {
       </script>
     </svg>
     <div class="window">
-      <svg class="characters" viewBox="0 0 300 400">
-        <!-- Nova Character -->
-        <g id="nova">
-          <!-- Hair -->
-          <path d="M140,100 Q150,80 160,100" stroke="#7B3F00" fill="none" stroke-width="4"/>
-          <!-- Head -->
-          <circle cx="150" cy="110" r="20" fill="#FFE0BD"/>
-          <!-- Body -->
-          <path d="M150,130 L150,200" stroke="#483D8B" stroke-width="20"/>
-          <!-- Arms -->
-          <line x1="130" y1="150" x2="170" y2="150" stroke="#483D8B" stroke-width="10"/>
-          <!-- Legs -->
-          <line x1="150" y1="200" x2="140" y2="240" stroke="#483D8B" stroke-width="10"/>
-          <line x1="150" y1="200" x2="160" y2="240" stroke="#483D8B" stroke-width="10"/>
-        </g>
-        
-        <!-- Father Character (Robot-like features) -->
-        <g id="father" transform="translate(200,0)">
-          <!-- Head -->
-          <rect x="130" y="90" width="40" height="40" fill="#708090"/>
-          <!-- Body -->
-          <rect x="135" y="130" width="30" height="70" fill="#4682B4"/>
-          <!-- Arms -->
-          <rect x="120" y="140" width="60" height="10" fill="#4682B4"/>
-          <!-- Legs -->
-          <rect x="140" y="200" width="10" height="40" fill="#4682B4"/>
-          <rect x="150" y="200" width="10" height="40" fill="#4682B4"/>
-          <!-- Mechanical Details -->
-          <circle cx="140" cy="105" r="5" fill="#00CED1"/>
-          <circle cx="160" cy="105" r="5" fill="#00CED1"/>
-          <line x1="135" y1="120" x2="165" y2="120" stroke="#00CED1" stroke-width="2"/>
-        </g>
-      </svg>
-    </div>
-    <div class="dialogue-box">
-      <p id="dialogueText"></p>
+      <div class="dialogue-box">
+        <p id="dialogueText"></p>
+      </div>
     </div>
   </div>
   
