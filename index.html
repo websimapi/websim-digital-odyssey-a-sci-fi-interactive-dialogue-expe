@@ -1,6 +1,5 @@
 <html><head><base href="." />
 <script type="module">
-// Import Web Speech API
 const startButton = document.getElementById('startButton');
 const audioPlayer = document.getElementById('backgroundMusic');
 let currentDialogueIndex = 0;
@@ -25,7 +24,6 @@ function speakText(text, voiceType, pitch, rate) {
     utterance.pitch = pitch;
     utterance.rate = rate;
     
-    // Select voice based on gender
     const voices = synth.getVoices();
     const voice = voices.find(v => 
       voiceType === 'female' ? v.name.includes('Female') : v.name.includes('Male')
@@ -42,16 +40,14 @@ async function startScene() {
   audioPlayer.play();
   audioPlayer.volume = 0.3;
   
-  // Add slight delay before first dialogue
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   for (const line of dialogue) {
     updateSceneText(line.text);
     await speakText(line.text, line.voice, line.pitch, line.rate);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Pause between lines
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
   
-  // Fade out music
   const fadeOut = setInterval(() => {
     if (audioPlayer.volume > 0.02) {
       audioPlayer.volume -= 0.02;
@@ -86,7 +82,37 @@ body {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  background: linear-gradient(#1a1a2e, #16213e);
+}
+
+.ship-interior {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(90deg, 
+      rgba(26, 26, 46, 0.9) 0%,
+      rgba(22, 33, 62, 0.9) 100%
+    );
+}
+
+.wall-panels {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(0deg, rgba(40, 40, 60, 0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(40, 40, 60, 0.5) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.characters {
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 400px;
 }
 
 .stars {
@@ -113,6 +139,7 @@ body {
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(100,150,255,0.3);
   overflow: hidden;
+  background: rgba(0,0,0,0.3);
 }
 
 .dialogue-box {
@@ -151,6 +178,9 @@ body {
 </head>
 <body>
   <div class="scene">
+    <div class="ship-interior">
+      <div class="wall-panels"></div>
+    </div>
     <svg class="stars" viewBox="0 0 1000 1000">
       <g id="stars"></g>
       <script>
@@ -166,9 +196,42 @@ body {
       </script>
     </svg>
     <div class="window">
-      <div class="dialogue-box">
-        <p id="dialogueText"></p>
-      </div>
+      <svg class="characters" viewBox="0 0 300 400">
+        <!-- Nova Character -->
+        <g id="nova">
+          <!-- Hair -->
+          <path d="M140,100 Q150,80 160,100" stroke="#7B3F00" fill="none" stroke-width="4"/>
+          <!-- Head -->
+          <circle cx="150" cy="110" r="20" fill="#FFE0BD"/>
+          <!-- Body -->
+          <path d="M150,130 L150,200" stroke="#483D8B" stroke-width="20"/>
+          <!-- Arms -->
+          <line x1="130" y1="150" x2="170" y2="150" stroke="#483D8B" stroke-width="10"/>
+          <!-- Legs -->
+          <line x1="150" y1="200" x2="140" y2="240" stroke="#483D8B" stroke-width="10"/>
+          <line x1="150" y1="200" x2="160" y2="240" stroke="#483D8B" stroke-width="10"/>
+        </g>
+        
+        <!-- Father Character (Robot-like features) -->
+        <g id="father" transform="translate(200,0)">
+          <!-- Head -->
+          <rect x="130" y="90" width="40" height="40" fill="#708090"/>
+          <!-- Body -->
+          <rect x="135" y="130" width="30" height="70" fill="#4682B4"/>
+          <!-- Arms -->
+          <rect x="120" y="140" width="60" height="10" fill="#4682B4"/>
+          <!-- Legs -->
+          <rect x="140" y="200" width="10" height="40" fill="#4682B4"/>
+          <rect x="150" y="200" width="10" height="40" fill="#4682B4"/>
+          <!-- Mechanical Details -->
+          <circle cx="140" cy="105" r="5" fill="#00CED1"/>
+          <circle cx="160" cy="105" r="5" fill="#00CED1"/>
+          <line x1="135" y1="120" x2="165" y2="120" stroke="#00CED1" stroke-width="2"/>
+        </g>
+      </svg>
+    </div>
+    <div class="dialogue-box">
+      <p id="dialogueText"></p>
     </div>
   </div>
   
