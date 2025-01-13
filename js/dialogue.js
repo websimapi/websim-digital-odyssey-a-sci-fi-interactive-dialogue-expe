@@ -1,8 +1,8 @@
+const startButton = document.getElementById('startButton');
+const audioPlayer = document.getElementById('backgroundMusic');
 let currentDialogueIndex = 0;
 const synth = window.speechSynthesis;
 let isPaused = false;
-const startButton = document.getElementById('startButton');
-const audioPlayer = document.getElementById('backgroundMusic');
 
 const dialogue = [
   { text: "Father, why do the stars look different today? They seem... closer somehow.", voice: "female", pitch: 1.2, rate: 0.9 },
@@ -36,6 +36,27 @@ function speakText(text, voiceType, pitch, rate) {
     utterance.onend = resolve;
     synth.speak(utterance);
   });
+}
+
+function updateSceneText(text) {
+  const dialogueText = document.getElementById('dialogueText');
+  dialogueText.textContent = text;
+  
+  const novaPortrait = document.querySelector('.character-portrait');
+  const fatherPortrait = document.querySelector('.father-portrait');
+  
+  const currentLine = dialogue[currentDialogueIndex - 1];
+  if (currentLine.voice === 'female') {
+    novaPortrait.style.opacity = '1';
+    fatherPortrait.style.opacity = '0';
+    dialogueText.className = 'nova-text';
+  } else {
+    novaPortrait.style.opacity = '0'; 
+    fatherPortrait.style.opacity = '1';
+    dialogueText.className = 'father-text';
+  }
+  
+  currentDialogueIndex++;
 }
 
 export async function startScene() {
@@ -73,25 +94,4 @@ export function pauseScene() {
   startButton.style.display = 'flex';
   document.querySelector('.character-portrait').style.opacity = '0';
   document.querySelector('.father-portrait').style.opacity = '0';
-}
-
-function updateSceneText(text) {
-  const dialogueText = document.getElementById('dialogueText');
-  dialogueText.textContent = text;
-  
-  const novaPortrait = document.querySelector('.character-portrait');
-  const fatherPortrait = document.querySelector('.father-portrait');
-  
-  const currentLine = dialogue[currentDialogueIndex];
-  if (currentLine.voice === 'female') {
-    novaPortrait.style.opacity = '1';
-    fatherPortrait.style.opacity = '0';
-    dialogueText.className = 'nova-text';
-  } else {
-    novaPortrait.style.opacity = '0'; 
-    fatherPortrait.style.opacity = '1';
-    dialogueText.className = 'father-text';
-  }
-  
-  currentDialogueIndex++;
 }

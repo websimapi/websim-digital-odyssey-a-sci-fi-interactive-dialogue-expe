@@ -1,4 +1,4 @@
-import { initThreeJS, onWindowResize } from './scene3d.js';
+import { initThreeJS, onWindowResize } from './scene.js';
 import { startScene, pauseScene } from './dialogue.js';
 
 const startButton = document.getElementById('startButton');
