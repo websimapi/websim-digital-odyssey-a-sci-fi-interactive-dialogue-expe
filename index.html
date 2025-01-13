@@ -162,20 +162,23 @@ function pauseScene() {
 }
 
 function updateSceneText(text) {
-  document.getElementById('dialogueText').textContent = text;
+  const dialogueText = document.getElementById('dialogueText');
+  dialogueText.textContent = text;
   
   // Get portrait elements
   const novaPortrait = document.querySelector('.character-portrait');
   const fatherPortrait = document.querySelector('.father-portrait');
   
-  // Show/hide portraits based on speaker
+  // Show/hide portraits and update text styling based on speaker
   const currentLine = dialogue[currentDialogueIndex];
   if (currentLine.voice === 'female') {
     novaPortrait.style.opacity = '1';
     fatherPortrait.style.opacity = '0';
+    dialogueText.className = 'nova-text';
   } else {
     novaPortrait.style.opacity = '0'; 
     fatherPortrait.style.opacity = '1';
+    dialogueText.className = 'father-text';
   }
   
   currentDialogueIndex++;
@@ -268,8 +271,10 @@ body {
 
 .dialogue-box {
   width: 80%;
+  display: flex;
+  justify-content: flex-start;
+  padding: 30px;
   background: rgba(0,0,0,0.8);
-  padding: 20px;
   border-radius: 10px;
   text-align: center;
   color: #fff;
@@ -310,6 +315,43 @@ body {
   font-size: 1.2em;
   line-height: 1.4;
   font-family: 'Arial', sans-serif;
+  max-width: 70%;
+}
+
+#dialogueText.nova-text {
+  margin-left: 180px; 
+  color: #8aadf4; 
+}
+
+#dialogueText.father-text {
+  margin-right: 180px; 
+  margin-left: auto;
+  color: #ff9e64; 
+}
+
+.character-portrait {
+  position: absolute;
+  left: 20px;
+  bottom: 90px;
+  width: 150px;
+  height: 150px;
+  border: 3px solid rgba(100,150,255,0.5);
+  border-radius: 10px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 1001; 
+}
+
+.father-portrait {
+  right: 20px;
+  left: auto;
+}
+
+.character-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .window-frame::before,
@@ -331,31 +373,6 @@ body {
 .window-frame::after {
   top: 10px;
   right: 10px;
-}
-
-.character-portrait {
-  position: absolute;
-  left: 20px;
-  bottom: 90px;
-  width: 150px;
-  height: 150px;
-  border: 3px solid rgba(100,150,255,0.5);
-  border-radius: 10px;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.3s;
-  z-index: 999;
-}
-
-.father-portrait {
-  right: 20px;
-  left: auto;
-}
-
-.character-portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 </style>
 </head>
