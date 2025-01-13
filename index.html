@@ -1,0 +1,178 @@
+<html><head><base href="." />
+<script type="module">
+// Import Web Speech API
+const startButton = document.getElementById('startButton');
+const audioPlayer = document.getElementById('backgroundMusic');
+let currentDialogueIndex = 0;
+const synth = window.speechSynthesis;
+
+const dialogue = [
+  { text: "Father, why do the stars look different today? They seem... closer somehow.", voice: "female", pitch: 1.2, rate: 0.9 },
+  { text: "The ship has entered a new sector, my dear. We're approaching the Centauri Belt.", voice: "male", pitch: 0.8, rate: 0.8 },
+  { text: "Will we ever dock somewhere? I've read about the space stations in the old books, with their gardens and markets...", voice: "female", pitch: 1.2, rate: 0.9 },
+  { text: "The outside world is dangerous, Nova. Everything you need is here within our ship. I've designed it that way.", voice: "male", pitch: 0.7, rate: 0.8 },
+  { text: "But I'm sixteen now. Surely I could at least visit the observation deck on Level 7? You've never let me go above Level 3.", voice: "female", pitch: 1.2, rate: 1 },
+  { text: "The upper levels aren't safe for you. Trust in my judgment, as I've trusted you with the knowledge of our stars.", voice: "male", pitch: 0.7, rate: 0.8 },
+  { text: "Your hand... it feels colder than usual.", voice: "female", pitch: 1.1, rate: 0.8 },
+  { text: "Perhaps you should rest, Nova. You've been studying the star charts for hours.", voice: "male", pitch: 0.6, rate: 0.7 },
+  { text: "I'm not tired. And you're avoiding my question about Level 7 again.", voice: "female", pitch: 1.2, rate: 1.1 },
+  { text: "Nova. Return to your quarters. That's an order.", voice: "male", pitch: 0.5, rate: 0.6 }
+];
+
+function speakText(text, voiceType, pitch, rate) {
+  return new Promise(resolve => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.pitch = pitch;
+    utterance.rate = rate;
+    
+    // Select voice based on gender
+    const voices = synth.getVoices();
+    const voice = voices.find(v => 
+      voiceType === 'female' ? v.name.includes('Female') : v.name.includes('Male')
+    ) || voices[0];
+    utterance.voice = voice;
+    
+    utterance.onend = resolve;
+    synth.speak(utterance);
+  });
+}
+
+async function startScene() {
+  startButton.style.display = 'none';
+  audioPlayer.play();
+  audioPlayer.volume = 0.3;
+  
+  // Add slight delay before first dialogue
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  for (const line of dialogue) {
+    updateSceneText(line.text);
+    await speakText(line.text, line.voice, line.pitch, line.rate);
+    await new Promise(resolve => setTimeout(resolve, 500)); // Pause between lines
+  }
+  
+  // Fade out music
+  const fadeOut = setInterval(() => {
+    if (audioPlayer.volume > 0.02) {
+      audioPlayer.volume -= 0.02;
+    } else {
+      audioPlayer.pause();
+      clearInterval(fadeOut);
+    }
+  }, 100);
+}
+
+function updateSceneText(text) {
+  document.getElementById('dialogueText').textContent = text;
+}
+
+startButton.addEventListener('click', startScene);
+</script>
+<style>
+body {
+  background: #000;
+  color: #fff;
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+.scene {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+}
+
+.stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  animation: twinkle 5s infinite linear;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.window {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80vw;
+  height: 60vh;
+  border: 4px solid #456;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(100,150,255,0.3);
+  overflow: hidden;
+}
+
+.dialogue-box {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  text-align: center;
+}
+
+#startButton {
+  padding: 15px 30px;
+  font-size: 1.2em;
+  background: #234;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+#startButton:hover {
+  background: #345;
+  transform: scale(1.05);
+}
+
+#dialogueText {
+  font-size: 1.2em;
+  line-height: 1.4;
+}
+</style>
+</head>
+<body>
+  <div class="scene">
+    <svg class="stars" viewBox="0 0 1000 1000">
+      <g id="stars"></g>
+      <script>
+        const starsGroup = document.getElementById('stars');
+        for(let i = 0; i < 200; i++) {
+          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", Math.random() * 1000);
+          circle.setAttribute("cy", Math.random() * 1000);
+          circle.setAttribute("r", Math.random() * 2);
+          circle.setAttribute("fill", "#fff");
+          starsGroup.appendChild(circle);
+        }
+      </script>
+    </svg>
+    <div class="window">
+      <div class="dialogue-box">
+        <p id="dialogueText"></p>
+      </div>
+    </div>
+  </div>
+  
+  <button id="startButton">Begin Scene</button>
+  <audio id="backgroundMusic" src="/Digital Odyssey - Track 2 - Sonauto (1).wav"></audio>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body></html>
