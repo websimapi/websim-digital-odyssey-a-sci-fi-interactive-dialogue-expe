@@ -3,10 +3,14 @@ import * as THREE from 'three';
 let scene, camera, renderer;
 let stars = [];
 let beltParticles = [];
+let shipInterior;
+let nova;
+let cameraTarget = new THREE.Vector3(0, 2, 0);
+let isTransitioning = false;
 
 export function initThreeJS() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000000); // Set scene background to pure black
+  scene.background = new THREE.Color(0x000000);
   
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
   
@@ -23,7 +27,7 @@ export function initThreeJS() {
   camera.position.y = 2;
   camera.lookAt(0, 0, 0);
 
-  const ambientLight = new THREE.AmbientLight(0x101010); // Reduced ambient light
+  const ambientLight = new THREE.AmbientLight(0x101010);
   scene.add(ambientLight);
 
   const pointLight1 = new THREE.PointLight(0x8888ff, 1, 100);
@@ -34,6 +38,8 @@ export function initThreeJS() {
   pointLight2.position.set(-5, -5, -5);
   scene.add(pointLight2);
 
+  createShipInterior();
+  createNovaModel();
   createStarfield();
   createDistantStars();
   createCentauriBelt3D();
@@ -41,42 +47,52 @@ export function initThreeJS() {
   animate();
 }
 
-function createDistantStars() {
-  // Create very small, distant stars
-  const distantStarGeometry = new THREE.BufferGeometry();
-  const distantStarMaterial = new THREE.PointsMaterial({
-    color: 0xFFFFFF,
-    size: 0.005, // Very small stars
-    transparent: true,
-    opacity: 0.6,
-    sizeAttenuation: true
+function createShipInterior() {
+  // Create room geometry
+  const roomGeometry = new THREE.BoxGeometry(20, 10, 30);
+  const roomMaterial = new THREE.MeshStandardMaterial({
+    color: 0x333333,
+    metalness: 0.8,
+    roughness: 0.2,
+    side: THREE.BackSide
   });
+  shipInterior = new THREE.Mesh(roomGeometry, roomMaterial);
+  shipInterior.position.set(0, 2, 0);
+  scene.add(shipInterior);
 
-  const distantStarVertices = [];
-  for(let i = 0; i < 50000; i++) { // More stars for denser background
-    const x = THREE.MathUtils.randFloatSpread(500); // Spread wider
-    const y = THREE.MathUtils.randFloatSpread(500);
-    const z = THREE.MathUtils.randFloatSpread(500);
-    distantStarVertices.push(x, y, z);
-  }
+  // Create window frame
+  const windowFrameGeometry = new THREE.BoxGeometry(10, 6, 0.5);
+  const windowFrameMaterial = new THREE.MeshStandardMaterial({
+    color: 0x444444,
+    metalness: 0.9,
+    roughness: 0.1
+  });
+  const windowFrame = new THREE.Mesh(windowFrameGeometry, windowFrameMaterial);
+  windowFrame.position.set(0, 2, -14.7);
+  scene.add(windowFrame);
+}
 
-  distantStarGeometry.setAttribute('position', new THREE.Float32BufferAttribute(distantStarVertices, 3));
-  const distantStarField = new THREE.Points(distantStarGeometry, distantStarMaterial);
-  scene.add(distantStarField);
+function createNovaModel() {
+  // Create simple placeholder for Nova
+  const novaGeometry = new THREE.CapsuleGeometry(0.5, 1.5, 1, 4);
+  const novaMaterial = new THREE.MeshStandardMaterial({ color: 0x8aadf4 });
+  nova = new THREE.Mesh(novaGeometry, novaMaterial);
+  nova.position.set(0, 0.75, -12);
+  scene.add(nova);
 }
 
 function createStarfield() {
   const starGeometry = new THREE.BufferGeometry();
   const starMaterial = new THREE.PointsMaterial({
     color: 0xFFFFFF,
-    size: 0.01, // Smaller stars
+    size: 0.01, 
     transparent: true,
     opacity: 0.7,
     sizeAttenuation: true
   });
 
   const starVertices = [];
-  for(let i = 0; i < 30000; i++) { // More stars
+  for(let i = 0; i < 30000; i++) { 
     const x = THREE.MathUtils.randFloatSpread(300);
     const y = THREE.MathUtils.randFloatSpread(300);
     const z = THREE.MathUtils.randFloatSpread(300);
@@ -89,6 +105,30 @@ function createStarfield() {
   stars.push(starField);
 }
 
+function createDistantStars() {
+  // Create very small, distant stars
+  const distantStarGeometry = new THREE.BufferGeometry();
+  const distantStarMaterial = new THREE.PointsMaterial({
+    color: 0xFFFFFF,
+    size: 0.005, 
+    transparent: true,
+    opacity: 0.6,
+    sizeAttenuation: true
+  });
+
+  const distantStarVertices = [];
+  for(let i = 0; i < 50000; i++) { 
+    const x = THREE.MathUtils.randFloatSpread(500); 
+    const y = THREE.MathUtils.randFloatSpread(500);
+    const z = THREE.MathUtils.randFloatSpread(500);
+    distantStarVertices.push(x, y, z);
+  }
+
+  distantStarGeometry.setAttribute('position', new THREE.Float32BufferAttribute(distantStarVertices, 3));
+  const distantStarField = new THREE.Points(distantStarGeometry, distantStarMaterial);
+  scene.add(distantStarField);
+}
+
 function createCentauriBelt3D() {
   for (let i = 0; i < 5; i++) {
     const particles = new THREE.BufferGeometry();
@@ -97,7 +137,7 @@ function createCentauriBelt3D() {
       size: 0.04 - (i * 0.007),
       blending: THREE.AdditiveBlending,
       transparent: true,
-      opacity: 0.6 - (i * 0.1) // Slightly reduced opacity
+      opacity: 0.6 - (i * 0.1) 
     });
 
     const particlePositions = [];
@@ -127,7 +167,7 @@ function createCentauriBelt3D() {
     size: 0.1,
     blending: THREE.AdditiveBlending,
     transparent: true,
-    opacity: 0.15 // Reduced dust opacity
+    opacity: 0.15 
   });
 
   const dustPositions = [];
@@ -149,10 +189,31 @@ function createCentauriBelt3D() {
   beltParticles.push(dustSystem);
 }
 
+export function transitionToFullScene() {
+  isTransitioning = true;
+  const dialogueBox = document.querySelector('.dialogue-box');
+  const portraits = document.querySelectorAll('.character-portrait');
+  
+  dialogueBox.style.opacity = '0';
+  portraits.forEach(portrait => portrait.style.display = 'none');
+  
+  setTimeout(() => {
+    dialogueBox.style.display = 'none';
+  }, 1000);
+}
+
 function animate() {
   requestAnimationFrame(animate);
 
-  // Rotate stars slightly for subtle movement
+  if (isTransitioning) {
+    // Smoothly move camera back
+    camera.position.z += 0.1;
+    camera.position.y += 0.05;
+    
+    // Look at Nova
+    camera.lookAt(cameraTarget);
+  }
+
   stars.forEach(starField => {
     starField.rotation.y += 0.0001;
   });
